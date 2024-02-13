@@ -1,0 +1,1 @@
+go run cli/crud.go $1

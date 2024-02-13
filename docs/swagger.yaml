@@ -1,0 +1,25 @@
+info:
+  contact: {}
+paths:
+  /mvt/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/x-protobuf
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - JWT: []
+      tags:
+      - mvt
+securityDefinitions:
+  JWT:
+    description: E.g. Bearer Your.Token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,50 @@
+[
+    {
+        "$lookup": {
+            "from": "user",
+            "localField": "createdby",
+            "foreignField": "_id",
+            "as": "createdByDetail"
+        }
+    },
+    {
+        "$unwind": {
+            "path": "$createdByDetail",
+            "preserveNullAndEmptyArrays": true
+        }
+    },
+    {
+        "$project": {
+            "password": 0,
+            "createdByDetail.password": 0
+        }
+    },
+    {
+        "$lookup": {
+            "from": "role",
+            "localField": "roleId",
+            "foreignField": "_id",
+            "as": "role"
+        }
+    },
+    {
+        "$unwind": {
+            "path": "$role",
+            "preserveNullAndEmptyArrays": true
+        }
+    },
+    {
+        "$lookup": {
+            "from": "v_workspace",
+            "localField": "workspaceId",
+            "foreignField": "_id",
+            "as": "workspaceDetail"
+        }
+    },
+    {
+        "$unwind": {
+            "path": "$workspaceDetail",
+            "preserveNullAndEmptyArrays": true
+        }
+    }
+]

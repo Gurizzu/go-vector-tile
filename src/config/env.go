@@ -1,0 +1,7 @@
+package config
+
+// ? Replace All TMP_MANAGEMENT
+const (
+	ENV_KEY_PORT       = "TMP_MANAGEMENT_PORT"
+	ENV_KEY_JWT_SECRET = "TMP_MANAGEMENT_SECRET"
+)

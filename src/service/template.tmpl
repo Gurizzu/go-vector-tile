@@ -1,0 +1,70 @@
+package service
+
+import (
+	"context"
+	"vector-tile/src/model"
+	"vector-tile/src/model/enum"
+	db "vector-tile/src/util/db/umongo"
+
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+//* Change this service content with ALT+C(Case sensitive) then CTRL+D this:
+//? template and Template
+
+type TemplateService struct {
+	collectionName string
+	ctx            context.Context
+	dbUtil         *db.MongoDbUtil
+	dbUtilView     *db.MongoDbUtil
+}
+
+func NewTemplateService() *TemplateService {
+	this := &TemplateService{
+		collectionName: enum.MongoCollection_Template.String(),
+		ctx:            context.Background(),
+	}
+	this.dbUtil = db.NewMongoDbUtilUseEnv(this.collectionName)
+	this.dbUtilView = db.NewMongoDbUtilUseEnv("v_" + this.collectionName)
+	this.dbUtilView = this.dbUtil
+
+	return this
+}
+
+func (this *TemplateService) BaseGetAll(param model.Template_Search, collection *db.MongoDbUtil) (data []model.Template_View,
+	metadata model.MetadataResponse,
+) {
+	filter := bson.M{}
+	listFilterAnd := []bson.M{}
+	param.HandleFilter(&listFilterAnd)
+
+	if len(listFilterAnd) > 0 {
+		filter["$and"] = listFilterAnd
+	}
+	metadata.Pagination, metadata.Message = collection.Find(filter,
+		param.Request, &data)
+	return
+}
+
+func (this *TemplateService) GetAll(param model.Template_Search) (data []model.Template_View, metadata model.MetadataResponse) {
+	return this.BaseGetAll(param, this.dbUtilView)
+}
+
+func (this *TemplateService) GetOne(key, value string) (res model.Template_View, errMessage string) {
+	errMessage = OverrideError(this.dbUtilView.FindOne(key, value, &res))
+	return
+}
+
+func (this *TemplateService) Upsert(param model.Template, isUpdate bool) (resp model.Response) {
+	upsertId, err := this.dbUtil.UpsertAndGetId(isUpdate, &param)
+	resp.Metadata.Message = umongo.GetErrForResponse(err)
+	resp.Data = model.Response_Data_Upsert{
+		ID: upsertId,
+	}
+	return
+}
+
+func (this *TemplateService) DeleteOne(key, value string) (errMessage string) {
+	errMessage = umongo.GetErrForResponse(this.dbUtil.DeleteOne(key, value))
+	return
+}

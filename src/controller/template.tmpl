@@ -1,0 +1,120 @@
+package controller
+
+import (
+	"log"
+	"time"
+	"vector-tile/src/model"
+	"vector-tile/src/service"
+
+	"github.com/gin-gonic/gin"
+)
+
+//* Change this controller content with ALT+C(Case sensitive) then CTRL+D this:
+//! and don't forget to register the controller in main.go
+//? template and Template
+
+type TemplateController struct {
+	router  *gin.RouterGroup
+	service *service.TemplateService
+}
+
+func NewTemplateController(router *gin.RouterGroup) *TemplateController {
+	this := &TemplateController{router: router, service: service.NewTemplateService()}
+
+	template := this.router.Group("/template")
+	template.POST("/get-all", this.GetAll)
+	template.GET("/get-one", this.GetOne)
+	template.POST("/add", this.Add)
+	template.PUT("/update", this.Update)
+	template.DELETE("/delete", this.DeleteOne)
+
+	return this
+}
+
+// @Tags template
+// @Accept json
+// @Param parameter body model.Template_Search true "PARAM"
+// @Produce json
+// @Success 200 {object} object{data=[]model.Template_View,meta_data=model.MetadataResponse} "OK"
+// @Router /template/get-all [post]
+// @Security JWT
+func (this *TemplateController) GetAll(ctx *gin.Context) {
+	resp := model.Response{}
+	defer SetMetadataResponse(ctx, time.Now(), &resp)
+
+	var param model.Template_Search
+	if err := ctx.BindJSON(&param); err != nil {
+		log.Println(err)
+		return
+	}
+
+	resp.Data, resp.Metadata = this.service.GetAll(param)
+}
+
+// @Tags template
+// @Accept json
+// @Param id query string true "ID"
+// @Produce json
+// @Success 200 {object} object{data=model.Template_View,meta_data=model.MetadataResponse} "OK"
+// @Router /template/get-one [get]
+// @Security JWT
+func (this *TemplateController) GetOne(ctx *gin.Context) {
+	resp := model.Response{}
+	defer SetMetadataResponse(ctx, time.Now(), &resp)
+
+	resp.Data, resp.Metadata.Message = this.service.GetOne("_id", ctx.Query("id"))
+}
+
+// @Tags template
+// @Accept json
+// @Param parameter body model.Template true "PARAM"
+// @Produce json
+// @Success 201 {object} object{meta_data=model.MetadataResponse} "OK"
+// @Router /template/add [post]
+// @Security JWT
+func (this *TemplateController) Add(ctx *gin.Context) {
+	resp := model.Response{}
+	defer SetMetadataResponse(ctx, time.Now(), &resp)
+
+	var param model.Template
+	if err := ctx.BindJSON(&param); err != nil {
+		log.Println(err)
+		return
+	}
+
+	resp = this.service.Upsert(param, false)
+}
+
+// @Tags template
+// @Accept json
+// @Param parameter body model.Template true "PARAM"
+// @Produce json
+// @Success 200 {object} object{meta_data=model.MetadataResponse} "OK"
+// @Router /template/update [put]
+// @Security JWT
+func (this *TemplateController) Update(ctx *gin.Context) {
+	resp := model.Response{}
+	defer SetMetadataResponse(ctx, time.Now(), &resp)
+
+	var param model.Template
+	if err := ctx.BindJSON(&param); err != nil {
+		log.Println(err)
+		return
+	}
+
+	resp = this.service.Upsert(param, true)
+}
+
+// @Tags template
+// @Accept json
+// @Param id query string true "ID"
+// @Produce json
+// @Success 200 {object} object{meta_data=model.MetadataResponse} "OK"
+// @Router /template/delete [delete]
+// @Security JWT
+func (this *TemplateController) DeleteOne(ctx *gin.Context) {
+	resp := model.Response{}
+	defer SetMetadataResponse(ctx, time.Now(), &resp)
+
+	resp.Metadata.Message = this.service.DeleteOne("_id", ctx.Query("id"))
+}
